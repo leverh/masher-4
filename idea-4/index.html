@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masher - Browser-Based Video Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0f;
+            color: #e4e4e7;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated gradient background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+            z-index: 0;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #a1a1aa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #e4e4e7;
+        }
+
+        .github-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: #e4e4e7;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .github-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 0 4rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 2rem;
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #a1a1aa;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e4e4e7;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Demo Editor Section */
+        .demo-section {
+            margin: 4rem 0;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .editor-mockup {
+            background: #18181b;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .editor-header {
+            background: #27272a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .editor-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .editor-dot:nth-child(2) {
+            background: #f59e0b;
+        }
+
+        .editor-dot:nth-child(3) {
+            background: #10b981;
+        }
+
+        .editor-body {
+            padding: 2rem;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .preview-area {
+            background: #000;
+            aspect-ratio: 16/9;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-placeholder {
+            color: #52525b;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .play-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(99, 102, 241, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .play-icon:hover {
+            transform: scale(1.1);
+            background: rgba(99, 102, 241, 1);
+        }
+
+        .play-icon::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid white;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+
+        .timeline-area {
+            background: #27272a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-label {
+            color: #a1a1aa;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .track {
+            background: #18181b;
+            height: 60px;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clip {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            height: 100%;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0 1rem;
+            animation: slideIn 0.6s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .clip:nth-child(1) { width: 30%; animation-delay: 0s; }
+        .clip:nth-child(2) { width: 25%; animation-delay: 0.1s; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); }
+        .clip:nth-child(3) { width: 35%; animation-delay: 0.2s; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+
+        /* Features Grid */
+        .features {
+            padding: 6rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #e4e4e7;
+        }
+
+        .feature-card p {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+        }
+
+        /* Code Section */
+        .code-section {
+            padding: 4rem 0;
+        }
+
+        .code-example {
+            background: #18181b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #27272a;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-title {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 0.5rem;
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .code-body {
+            padding: 2rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            color: #a1a1aa;
+        }
+
+        .code-keyword { color: #c084fc; }
+        .code-string { color: #34d399; }
+        .code-function { color: #60a5fa; }
+        .code-comment { color: #52525b; font-style: italic; }
+
+        /* Footer */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 6rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: #e4e4e7;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: #a1a1aa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #e4e4e7;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #52525b;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .demo-section {
+                padding: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    
+    <div class="container">
+        <!-- Navigation -->
+        <nav>
+            <div class="logo">MASHER</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#docs">Docs</a></li>
+                <li><a href="#api">API</a></li>
+                <li><a href="#guides">Guides</a></li>
+            </ul>
+            <a href="https://github.com/moviemasher" class="github-btn" target="_blank">
+                <span>⭐</span>
+                <span>GitHub</span>
+            </a>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="badge">🎬 Open Source • Browser-Based • Developer First</div>
+            <h1>Edit Video in<br>Your Browser</h1>
+            <p class="subtitle">
+                A powerful, open-source video editor that runs entirely in the browser. 
+                Build custom editing experiences with our flexible Web Components and REST API.
+            </p>
+            <div class="cta-buttons">
+                <a href="#demo" class="btn-primary">Try Live Demo</a>
+                <a href="#docs" class="btn-secondary">View Documentation</a>
+            </div>
+        </section>
+
+        <!-- Demo Editor Section -->
+        <section class="demo-section" id="demo">
+            <div class="editor-mockup">
+                <div class="editor-header">
+                    <div class="editor-dot"></div>
+                    <div class="editor-dot"></div>
+                    <div class="editor-dot"></div>
+                </div>
+                <div class="editor-body">
+                    <div class="preview-area">
+                        <div class="preview-placeholder">Real-time Preview</div>
+                        <div class="play-icon"></div>
+                    </div>
+                    <div class="timeline-area">
+                        <div class="timeline-label">
+                            <span>📽️</span>
+                            <span>Timeline</span>
+                        </div>
+                        <div class="timeline-tracks">
+                            <div class="track">
+                                <div class="clip">Video 1</div>
+                                <div class="clip">Video 2</div>
+                                <div class="clip">Video 3</div>
+                            </div>
+                            <div class="track">
+                                <div class="clip" style="width: 60%;">Audio Track</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="features" id="features">
+            <h2 class="section-title">Built for Developers</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Browser-Based</h3>
+                    <p>No plugins or installations required. Edit video with standard Web Components that work in any modern browser.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Preview</h3>
+                    <p>See changes instantly with optimized low-resolution previews while editing. Render high-quality output on the server.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Fully Customizable</h3>
+                    <p>Override colors, sizes, and behaviors with CSS variables. Replace entire UI elements using slots.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Plugin Architecture</h3>
+                    <p>Extend functionality with custom plugins for loading, saving, exporting, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>REST API</h3>
+                    <p>Programmatic access to transcode, decode, and encode functionality via JSON-based API.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Open Source</h3>
+                    <p>MIT licensed and available on GitHub. Contribute, fork, or use it however you need.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Example Section -->
+        <section class="code-section">
+            <h2 class="section-title">Quick Integration</h2>
+            <div class="code-example">
+                <div class="code-header">
+                    <span class="code-title">index.html</span>
+                    <button class="copy-btn">Copy Code</button>
+                </div>
+                <div class="code-body">
+                    <div class="code-line"><span class="code-comment">// Import the Masher Web Component</span></div>
+                    <div class="code-line"><span class="code-keyword">import</span> { <span class="code-function">Masher</span> } <span class="code-keyword">from</span> <span class="code-string">'@moviemasher/client'</span>;</div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="code-comment">// Create a new editor instance</span></div>
+                    <div class="code-line"><span class="code-keyword">const</span> editor = <span class="code-keyword">new</span> <span class="code-function">Masher</span>({</div>
+                    <div class="code-line">  <span class="code-function">container</span>: <span class="code-string">'#editor'</span>,</div>
+                    <div class="code-line">  <span class="code-function">theme</span>: <span class="code-string">'dark'</span>,</div>
+                    <div class="code-line">  <span class="code-function">preview</span>: <span class="code-keyword">true</span></div>
+                    <div class="code-line">});</div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="code-comment">// Load media and start editing</span></div>
+                    <div class="code-line">editor.<span class="code-function">load</span>(<span class="code-string">'path/to/video.mp4'</span>);</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#demo">Live Demo</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#changelog">Changelog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="#guides">Guides</a></li>
+                        <li><a href="#api">API Reference</a></li>
+                        <li><a href="#examples">Examples</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/moviemasher">GitHub</a></li>
+                        <li><a href="#discord">Discord</a></li>
+                        <li><a href="#twitter">Twitter</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#privacy">Privacy</a></li>
+                        <li><a href="#terms">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Masher Media. Open source under MPL-2.0 License.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Simple animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .code-example').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s ease';
+            observer.observe(el);
+        });
+
+        // Copy code button
+        document.querySelector('.copy-btn')?.addEventListener('click', function() {
+            const codeText = document.querySelector('.code-body').innerText;
+            navigator.clipboard.writeText(codeText);
+            this.textContent = 'Copied!';
+            setTimeout(() => {
+                this.textContent = 'Copy Code';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
